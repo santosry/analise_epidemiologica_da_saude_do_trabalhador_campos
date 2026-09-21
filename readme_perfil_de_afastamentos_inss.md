@@ -1,26 +1,26 @@
-# Script R para An·lise EstatÌstica Associativa de Dados de Sa˙de do Trabalhador (SmartLab/INSS)
+# Script R para An√°lise Estat√≠stica Associativa de Dados de Sa√∫de do Trabalhador (SmartLab/INSS)
 
-Este script foi desenvolvido para servir como um guia did·tico completo para iniciantes na an·lise de dados com R. Ele cobre desde a importaÁ„o e organizaÁ„o dos dados atÈ a aplicaÁ„o de testes estatÌsticos de associaÁ„o (normalidade, correlaÁ„o de Pearson, Spearman, Kendall e teste de Wilcoxon), com explicaÁıes linha a linha e boas pr·ticas de visualizaÁ„o. O exemplo utiliza os dados de perfil de doenÁas e ocupaÁıes do SmartLab, mas a lÛgica pode ser adaptada para qualquer conjunto de dados.
+Este script foi desenvolvido para servir como um guia did√°tico completo para iniciantes na an√°lise de dados com R. Ele cobre desde a importa√ß√£o e organiza√ß√£o dos dados at√© a aplica√ß√£o de testes estat√≠sticos de associa√ß√£o (normalidade, correla√ß√£o de Pearson, Spearman, Kendall e teste de Wilcoxon), com explica√ß√µes linha a linha e boas pr√°ticas de visualiza√ß√£o. O exemplo utiliza os dados de perfil de doen√ßas e ocupa√ß√µes do SmartLab, mas a l√≥gica pode ser adaptada para qualquer conjunto de dados.
 
 ------------------------------------------------------------------------
 
-## 1. ConfiguraÁ„o do ambiente
+## 1. Configura√ß√£o do ambiente
 
-Antes de comeÁar, È importante entender **por que** seguimos uma ordem especÌfica na an·lise:
+Antes de come√ßar, √© importante entender **por que** seguimos uma ordem espec√≠fica na an√°lise:
 
-1.  **Verificar a normalidade dos dados** ñ Muitos testes estatÌsticos (como a correlaÁ„o de Pearson) assumem que os dados seguem uma distribuiÁ„o normal. Se essa suposiÁ„o for violada, precisamos de alternativas n„o paramÈtricas (Spearman, Kendall, Wilcoxon etc.);
-2.  **Escolher o teste adequado** ñ A normalidade define se usaremos um teste paramÈtrico ou n„o paramÈtrico;
-3.  **Interpretar os resultados** ñ Saber o que o p-valor e o coeficiente de correlaÁ„o significam na pr·tica, considerando os limites de cada teste estatÌstico.
+1.  **Verificar a normalidade dos dados** ‚Äì Muitos testes estat√≠sticos (como a correla√ß√£o de Pearson) assumem que os dados seguem uma distribui√ß√£o normal. Se essa suposi√ß√£o for violada, precisamos de alternativas n√£o param√©tricas (Spearman, Kendall, Wilcoxon etc.);
+2.  **Escolher o teste adequado** ‚Äì A normalidade define se usaremos um teste param√©trico ou n√£o param√©trico;
+3.  **Interpretar os resultados** ‚Äì Saber o que o p-valor e o coeficiente de correla√ß√£o significam na pr√°tica, considerando os limites de cada teste estat√≠stico.
 
-Vamos comeÁar instalando e carregando os pacotes (extensıes) necess·rios. O `tidyverse` È uma coleÁ„o de pacotes que facilita a manipulaÁ„o e visualizaÁ„o de dados. O `ggpubr` e `ggpmisc` ajudam a adicionar equaÁıes e p-valores em gr·ficos. O `nortest` oferece testes de normalidade adicionais. O `corrplot` È ˙til para matrizes de correlaÁ„o.
+Vamos come√ßar instalando e carregando os pacotes (extens√µes) necess√°rios. O `tidyverse` √© uma cole√ß√£o de pacotes que facilita a manipula√ß√£o e visualiza√ß√£o de dados. O `ggpubr` e `ggpmisc` ajudam a adicionar equa√ß√µes e p-valores em gr√°ficos. O `nortest` oferece testes de normalidade adicionais. O `corrplot` √© √∫til para matrizes de correla√ß√£o.
 
 ``` r
 # -------------------------------------------------------------------------
-# 1. INSTALA«√O E CARREGAMENTO DE PACOTES
+# 1. INSTALA√á√ÉO E CARREGAMENTO DE PACOTES
 # -------------------------------------------------------------------------
 
-# A funÁ„o `if (!require(...))` verifica se o pacote est· instalado.
-# Se n„o estiver, ele instala. Isso evita erros caso o pacote j· exista.
+# A fun√ß√£o `if (!require(...))` verifica se o pacote est√° instalado.
+# Se n√£o estiver, ele instala. Isso evita erros caso o pacote j√° exista.
 if (!require("tidyverse")) install.packages("tidyverse")
 if (!require("ggpubr")) install.packages("ggpubr")
 if (!require("ggpmisc")) install.packages("ggpmisc")
@@ -29,7 +29,7 @@ if (!require("corrplot")) install.packages("corrplot")
 if (!require("readxl")) install.packages("readxl")   # Para ler arquivos Excel (.xlsx)
 if (!require("writexl")) install.packages("writexl") # Para exportar dados para Excel
 
-# Carregando os pacotes na sess„o atual
+# Carregando os pacotes na sess√£o atual
 library(tidyverse)
 library(ggpubr)
 library(ggpmisc)
@@ -39,60 +39,60 @@ library(readxl)
 library(writexl)
 ```
 
-**Dica:** Sempre execute este bloco no inÌcio de cada sess„o de trabalho. Se vocÍ reiniciar o R, precisar· sempre carregar os pacotes novamente.
+**Dica:** Sempre execute este bloco no in√≠cio de cada sess√£o de trabalho. Se voc√™ reiniciar o R, precisar√° sempre carregar os pacotes novamente.
 
 ------------------------------------------------------------------------
 
-## 2. ImportaÁ„o e organizaÁ„o dos dados
+## 2. Importa√ß√£o e organiza√ß√£o dos dados
 
-Nesta seÁ„o, importamos os dados do arquivo `perfil_de_doenÁas_dados.xlsx`. O arquivo tem duas tabelas lado a lado: uma para afastamentos acident·rios (B91) e outra para n„o acident·rios (B31). Precisamos organiz·-las em um formato **tidy** (longo), onde cada linha È uma observaÁ„o e cada coluna È uma vari·vel.
+Nesta se√ß√£o, importamos os dados do arquivo `perfil_de_doen√ßas_dados.xlsx`. O arquivo tem duas tabelas lado a lado: uma para afastamentos acident√°rios (B91) e outra para n√£o acident√°rios (B31). Precisamos organiz√°-las em um formato **tidy** (longo), onde cada linha √© uma observa√ß√£o e cada coluna √© uma vari√°vel.
 
 ``` r
 # -------------------------------------------------------------------------
-# 2. IMPORTA«√O E ORGANIZA«√O DOS DADOS
+# 2. IMPORTA√á√ÉO E ORGANIZA√á√ÉO DOS DADOS
 # -------------------------------------------------------------------------
 
-# IMPORTANTE: a planilha tem DUAS linhas de cabeÁalho. A primeira tem os tÌtulos
-# mesclados ("Afastamentos B91" e "Afastamentos B31") e a segunda tem "DoenÁa"/"Quantidade".
-# Se lermos do jeito padr„o, o `read_excel` usa a 1™ linha como nome das colunas e os
-# valores de "Quantidade" viram TEXTO, o que quebra os gr·ficos com escala log
+# IMPORTANTE: a planilha tem DUAS linhas de cabe√ßalho. A primeira tem os t√≠tulos
+# mesclados ("Afastamentos B91" e "Afastamentos B31") e a segunda tem "Doen√ßa"/"Quantidade".
+# Se lermos do jeito padr√£o, o `read_excel` usa a 1¬™ linha como nome das colunas e os
+# valores de "Quantidade" viram TEXTO, o que quebra os gr√°ficos com escala log
 # (erro "Error in log(x, base): non-numeric argument to mathematical function").
-# SoluÁ„o: `skip = 1` pula a 1™ linha e `col_names = FALSE` evita usar cabeÁalho.
-dados_brutos <- read_excel("perfil_de_doenÁas_dados.xlsx", sheet = 1,
+# Solu√ß√£o: `skip = 1` pula a 1¬™ linha e `col_names = FALSE` evita usar cabe√ßalho.
+dados_brutos <- read_excel("perfil_de_doen√ßas_dados.xlsx", sheet = 1,
                            skip = 1, col_names = FALSE)
-# O sÌmbolo "<-" significa recebe, indica que estamos atribuÌndo objetos a um determinado vetor, chamado de dataframe.
+# O s√≠mbolo "<-" significa recebe, indica que estamos atribu√≠ndo objetos a um determinado vetor, chamado de dataframe.
 
 # Vamos inspecionar as primeiras linhas para entender a estrutura.
 head(dados_brutos)
-# A estrutura esperada È:
-# Colunas 1 e 2: DoenÁa e Quantidade para B91
-# Colunas 4 e 5: DoenÁa e Quantidade para B31
+# A estrutura esperada √©:
+# Colunas 1 e 2: Doen√ßa e Quantidade para B91
+# Colunas 4 e 5: Doen√ßa e Quantidade para B31
 # A coluna 3 fica vazia (separador entre os dois blocos).
-# A primeira linha de dados ainda È o cabeÁalho repetido ("DoenÁa"/"Quantidade"),
-# por isso ela È removida logo abaixo com o filter().
+# A primeira linha de dados ainda √© o cabe√ßalho repetido ("Doen√ßa"/"Quantidade"),
+# por isso ela √© removida logo abaixo com o filter().
 
 # Para facilitar, vamos renomear as colunas e separar os dois blocos.
-# O operador `%>%` (pipe ou mutate) encadeia operaÁıes: o resultado de uma funÁ„o vira o input da prÛxima.
+# O operador `%>%` (pipe ou mutate) encadeia opera√ß√µes: o resultado de uma fun√ß√£o vira o input da pr√≥xima.
 dados_b91 <- dados_brutos %>%
-  select(Doenca_B91 = 1, Quantidade_B91 = 2) %>%  # Seleciona a 1™ e 2™ colunas
-  filter(!is.na(Doenca_B91)) %>%                  # Remove linhas onde a doenÁa est· vazia
-  filter(Doenca_B91 != "DoenÁa") %>%              # Remove a linha de cabeÁalho repetido
+  select(Doenca_B91 = 1, Quantidade_B91 = 2) %>%  # Seleciona a 1¬™ e 2¬™ colunas
+  filter(!is.na(Doenca_B91)) %>%                  # Remove linhas onde a doen√ßa est√° vazia
+  filter(Doenca_B91 != "Doen√ßa") %>%              # Remove a linha de cabe√ßalho repetido
   mutate(
     Categoria = "B91",                             # Cria uma coluna indicando a categoria
-    Quantidade_B91 = as.numeric(Quantidade_B91)    # Converte de texto para n˙mero (ESSENCIAL)
+    Quantidade_B91 = as.numeric(Quantidade_B91)    # Converte de texto para n√∫mero (ESSENCIAL)
   )
 
 dados_b31 <- dados_brutos %>%
   select(Doenca_B31 = 4, Quantidade_B31 = 5) %>%
   filter(!is.na(Doenca_B31)) %>%
-  filter(Doenca_B31 != "DoenÁa") %>%
+  filter(Doenca_B31 != "Doen√ßa") %>%
   mutate(
     Categoria = "B31",
-    Quantidade_B31 = as.numeric(Quantidade_B31)    # Converte de texto para n˙mero (ESSENCIAL)
+    Quantidade_B31 = as.numeric(Quantidade_B31)    # Converte de texto para n√∫mero (ESSENCIAL)
   )
 
-# Agora unimos os dois data frames em um sÛ, usando `bind_rows`.
-# Isso cria uma estrutura tidy: uma linha por doenÁa/categoria.
+# Agora unimos os dois data frames em um s√≥, usando `bind_rows`.
+# Isso cria uma estrutura tidy: uma linha por doen√ßa/categoria.
 dados_tidy <- bind_rows(
   dados_b91 %>% rename(Doenca = Doenca_B91, Quantidade = Quantidade_B91),
   dados_b31 %>% rename(Doenca = Doenca_B31, Quantidade = Quantidade_B31)
@@ -100,93 +100,93 @@ dados_tidy <- bind_rows(
 
 # Vamos verificar o resultado
 glimpse(dados_tidy)
-# A funÁ„o `glimpse` mostra a estrutura: tipo de cada coluna e as primeiras linhas.
-# CONFIRA: a coluna Quantidade deve aparecer como <dbl> (n˙mero), e N√O como <chr> (texto).
-stopifnot(is.numeric(dados_tidy$Quantidade))  # trava aqui se a convers„o n„o funcionou
+# A fun√ß√£o `glimpse` mostra a estrutura: tipo de cada coluna e as primeiras linhas.
+# CONFIRA: a coluna Quantidade deve aparecer como <dbl> (n√∫mero), e N√ÉO como <chr> (texto).
+stopifnot(is.numeric(dados_tidy$Quantidade))  # trava aqui se a convers√£o n√£o funcionou
 
 ```
 
-**ExplicaÁ„o do que foi feito:** - `read_excel(skip = 1, col_names = FALSE)` ignora o cabeÁalho mesclado da planilha. - `select()` escolhe colunas. - `mutate()` cria novas colunas e converte a `Quantidade` de texto para n˙mero com `as.numeric()`. - `filter()` remove linhas indesejadas. - `bind_rows()` empilha data frames. - `glimpse()` È como um ìraio-Xî da estrutura dos dados. - `stopifnot()` faz o script parar com um erro claro caso a coluna n„o seja numÈrica.
+**Explica√ß√£o do que foi feito:** - `read_excel(skip = 1, col_names = FALSE)` ignora o cabe√ßalho mesclado da planilha. - `select()` escolhe colunas. - `mutate()` cria novas colunas e converte a `Quantidade` de texto para n√∫mero com `as.numeric()`. - `filter()` remove linhas indesejadas. - `bind_rows()` empilha data frames. - `glimpse()` √© como um ‚Äúraio-X‚Äù da estrutura dos dados. - `stopifnot()` faz o script parar com um erro claro caso a coluna n√£o seja num√©rica.
 
-**AtenÁ„o (causa dos erros mais comuns):** a planilha original tem **duas linhas de cabeÁalho**. Se vocÍ ler sem `skip = 1`, a coluna `Quantidade` vira texto e vocÍ receber· erros como `Error in log(x, base): non-numeric argument to mathematical function` (ao usar `scale_y_log10()` nos gr·ficos) e `is.numeric(x) n„o È TRUE` (no `shapiro.test()`). A convers„o com `as.numeric()` resolve.
+**Aten√ß√£o (causa dos erros mais comuns):** a planilha original tem **duas linhas de cabe√ßalho**. Se voc√™ ler sem `skip = 1`, a coluna `Quantidade` vira texto e voc√™ receber√° erros como `Error in log(x, base): non-numeric argument to mathematical function` (ao usar `scale_y_log10()` nos gr√°ficos) e `is.numeric(x) n√£o √© TRUE` (no `shapiro.test()`). A convers√£o com `as.numeric()` resolve.
 
-**AtenÁ„o:** Se seus dados do SmartLab tiverem mais colunas (por exemplo, ocupaÁ„o, atividade econÙmica), vocÍ pode adaptar este cÛdigo para incluÌ-las. A lÛgica È sempre a mesma: cada linha deve ser uma observaÁ„o completa.
+**Aten√ß√£o:** Se seus dados do SmartLab tiverem mais colunas (por exemplo, ocupa√ß√£o, atividade econ√¥mica), voc√™ pode adaptar este c√≥digo para inclu√≠-las. A l√≥gica √© sempre a mesma: cada linha deve ser uma observa√ß√£o completa.
 
 ------------------------------------------------------------------------
 
-## 3. PadronizaÁ„o das nomenclaturas
+## 3. Padroniza√ß√£o das nomenclaturas
 
-O relatÛrio aponta que algumas categorias aparecem com **nomes diferentes para a mesma doenÁa** ó por exemplo, ìDepressıes e EpisÛdios Depressivosî e ìEpisÛdios Depressivos e Depressıesî (mesmas palavras, ordem trocada). Se n„o padronizarmos, o R trata cada grafia como uma doenÁa distinta, o que **distorce as contagens, os gr·ficos e todos os testes** (correlaÁ„o, Wilcoxon etc.). TambÈm h· erros de digitaÁ„o, como ìStress e **AdtaptaÁ„o**î (o correto È ìAdaptaÁ„oî).
+O relat√≥rio aponta que algumas categorias aparecem com **nomes diferentes para a mesma doen√ßa** ‚Äî por exemplo, ‚ÄúDepress√µes e Epis√≥dios Depressivos‚Äù e ‚ÄúEpis√≥dios Depressivos e Depress√µes‚Äù (mesmas palavras, ordem trocada). Se n√£o padronizarmos, o R trata cada grafia como uma doen√ßa distinta, o que **distorce as contagens, os gr√°ficos e todos os testes** (correla√ß√£o, Wilcoxon etc.). Tamb√©m h√° erros de digita√ß√£o, como ‚ÄúStress e **Adtapta√ß√£o**‚Äù (o correto √© ‚ÄúAdapta√ß√£o‚Äù).
 
-A boa pr·tica È criar uma **tabela de-para** (um dicion·rio de nomes) e aplic·-la logo apÛs a montagem dos dados, **antes** de qualquer an·lise.
+A boa pr√°tica √© criar uma **tabela de-para** (um dicion√°rio de nomes) e aplic√°-la logo ap√≥s a montagem dos dados, **antes** de qualquer an√°lise.
 
 ``` r
 # -------------------------------------------------------------------------
-# 3. PADRONIZA«√O DAS NOMENCLATURAS
+# 3. PADRONIZA√á√ÉO DAS NOMENCLATURAS
 # -------------------------------------------------------------------------
 
-# 1) Dicion·rio de nomes: cada "Nome_Original" vira um "Nome_Padronizado".
+# 1) Dicion√°rio de nomes: cada "Nome_Original" vira um "Nome_Padronizado".
 #    Use sempre a forma mais completa e correta como nome final.
 padronizacao <- tribble(
   ~Nome_Original,                        ~Nome_Padronizado,
-  "EpisÛdios Depressivos e Depressıes",  "Depressıes e EpisÛdios Depressivos",  # ordem trocada
-  "Stress e AdtaptaÁ„o",                 "Stress e AdaptaÁ„o"                   # erro de digitaÁ„o
+  "Epis√≥dios Depressivos e Depress√µes",  "Depress√µes e Epis√≥dios Depressivos",  # ordem trocada
+  "Stress e Adtapta√ß√£o",                 "Stress e Adapta√ß√£o"                   # erro de digita√ß√£o
 )
 
 # 2) Aplicamos o de-para aos dados.
 dados_tidy <- dados_tidy %>%
   left_join(padronizacao, by = c("Doenca" = "Nome_Original")) %>%  # junta o nome padronizado
   mutate(
-    Doenca = ifelse(is.na(Nome_Padronizado), Doenca, Nome_Padronizado)  # mantÈm o original se n„o houver regra
+    Doenca = ifelse(is.na(Nome_Padronizado), Doenca, Nome_Padronizado)  # mant√©m o original se n√£o houver regra
   ) %>%
   select(-Nome_Padronizado)                                        # remove a coluna auxiliar
 
 # 3) Somamos as quantidades das linhas que ficaram com o MESMO nome
-#    dentro da MESMA categoria (B91 ou B31) ó È aqui que as duplicatas se fundem.
+#    dentro da MESMA categoria (B91 ou B31) ‚Äî √© aqui que as duplicatas se fundem.
 dados_tidy <- dados_tidy %>%
   group_by(Doenca, Categoria) %>%
   summarise(Quantidade = sum(Quantidade, na.rm = TRUE), .groups = "drop")
 
-# 4) Conferindo o resultado (as duas grafias antigas devem ter virado uma sÛ)
+# 4) Conferindo o resultado (as duas grafias antigas devem ter virado uma s√≥)
 dados_tidy %>%
   filter(str_detect(Doenca, "Depress|Stress")) %>%
   arrange(Doenca, Categoria) %>%
   print()
 
-# VerificaÁ„o: n„o deve sobrar nenhum nome da lista de originais.
+# Verifica√ß√£o: n√£o deve sobrar nenhum nome da lista de originais.
 stopifnot(!any(dados_tidy$Doenca %in% padronizacao$Nome_Original))
 
-# Exportando os dados j· padronizados para um CSV, que ser· usado no Flourish.
+# Exportando os dados j√° padronizados para um CSV, que ser√° usado no Flourish.
 write_csv(dados_tidy, "dados_smartlab_tidy.csv")
 ```
 
-**Resultado esperado:** as duas grafias de depress„o s„o fundidas em uma sÛ por categoria: B91 = 50 + 12 = **62** e B31 = 1399 + 406 = **1805**. O total de linhas cai de 158 para **156**.
+**Resultado esperado:** as duas grafias de depress√£o s√£o fundidas em uma s√≥ por categoria: B91 = 50 + 12 = **62** e B31 = 1399 + 406 = **1805**. O total de linhas cai de 158 para **156**.
 
-**Dica:** sempre que encontrar novas duplicatas ou erros de digitaÁ„o, basta acrescentar uma linha na `tribble()`. Esse dicion·rio documenta as decisıes de padronizaÁ„o do projeto.
+**Dica:** sempre que encontrar novas duplicatas ou erros de digita√ß√£o, basta acrescentar uma linha na `tribble()`. Esse dicion√°rio documenta as decis√µes de padroniza√ß√£o do projeto.
 
-**Cuidado:** padronize **antes** de criar `dados_correlacao` (seÁ„o 6) e antes de rodar os testes. Se padronizar depois, o `pivot_wider()` ter· criado linhas separadas para cada grafia e a correlaÁ„o ficar· incorreta.
+**Cuidado:** padronize **antes** de criar `dados_correlacao` (se√ß√£o 6) e antes de rodar os testes. Se padronizar depois, o `pivot_wider()` ter√° criado linhas separadas para cada grafia e a correla√ß√£o ficar√° incorreta.
 
 ------------------------------------------------------------------------
 
-## 4. An·lise exploratÛria inicial
+## 4. An√°lise explorat√≥ria inicial
 
-Antes de qualquer teste estatÌstico, È fundamental **explorar** os dados para entender sua distribuiÁ„o, valores ausentes e possÌveis outliers (dispers„o dos dados)
+Antes de qualquer teste estat√≠stico, √© fundamental **explorar** os dados para entender sua distribui√ß√£o, valores ausentes e poss√≠veis outliers (dispers√£o dos dados)
 
 ``` r
 # -------------------------------------------------------------------------
-# 4. AN¡LISE EXPLORAT”RIA
+# 4. AN√ÅLISE EXPLORAT√ìRIA
 # -------------------------------------------------------------------------
 
-# Resumo estatÌstico das quantidades por categoria
+# Resumo estat√≠stico das quantidades por categoria
 resumo_geral <- dados_tidy %>%
   group_by(Categoria) %>%  # Agrupa por B91 ou B31
   summarise(
-    n = n(),                          # N˙mero de doenÁas listadas
-    media = mean(Quantidade),         # MÈdia das quantidades
+    n = n(),                          # N√∫mero de doen√ßas listadas
+    media = mean(Quantidade),         # M√©dia das quantidades
     mediana = median(Quantidade),     # Mediana
-    desvio = sd(Quantidade),          # Desvio padr„o
-    min = min(Quantidade),            # Valor mÌnimo
-    max = max(Quantidade)             # Valor m·ximo
+    desvio = sd(Quantidade),          # Desvio padr√£o
+    min = min(Quantidade),            # Valor m√≠nimo
+    max = max(Quantidade)             # Valor m√°ximo
   )
 
 print(resumo_geral)
@@ -194,33 +194,33 @@ print(resumo_geral)
 # Verificando valores ausentes
 colSums(is.na(dados_tidy))  # Conta NAs por coluna
 
-# VisualizaÁ„o inicial: boxplot das quantidades por categoria
+# Visualiza√ß√£o inicial: boxplot das quantidades por categoria
 ggplot(dados_tidy, aes(x = Categoria, y = Quantidade, fill = Categoria)) +
   geom_boxplot() +
-  scale_y_log10() +  # Escala logarÌtmica para lidar com a grande variaÁ„o
+  scale_y_log10() +  # Escala logar√≠tmica para lidar com a grande varia√ß√£o
   labs(
-    title = "DistribuiÁ„o das Quantidades de Afastamentos por Categoria",
-    x = "Categoria (B91 = Acident·rio, B31 = N„o Acident·rio)",
+    title = "Distribui√ß√£o das Quantidades de Afastamentos por Categoria",
+    x = "Categoria (B91 = Acident√°rio, B31 = N√£o Acident√°rio)",
     y = "Quantidade (escala log)"
   ) +
   theme_minimal()
 
 ```
 
-**O que observar:** - A mÈdia È muito diferente da mediana? Isso sugere assimetria. - H· valores extremos (outliers)? A escala logarÌtmica ajuda a visualiz·-los. - O desvio padr„o È grande em relaÁ„o ‡ mÈdia? Indica alta variabilidade.
+**O que observar:** - A m√©dia √© muito diferente da mediana? Isso sugere assimetria. - H√° valores extremos (outliers)? A escala logar√≠tmica ajuda a visualiz√°-los. - O desvio padr√£o √© grande em rela√ß√£o √† m√©dia? Indica alta variabilidade.
 
 ------------------------------------------------------------------------
 
-## 5. Teste de Normalidade (Shapiro-Wilk)
+## 5. Teste de normalidade (Shapiro-Wilk)
 
-**Por que fazer isso?** O teste de Shapiro-Wilk verifica se uma amostra vem de uma populaÁ„o com distribuiÁ„o normal. A hipÛtese nula (H0) È que os dados **s„o** normais. Se o p-valor for **maior que 0,05**, n„o rejeitamos a normalidade. Se for **menor que 0,05**, os dados **n„o** seguem uma distribuiÁ„o normal, e devemos usar testes n„o paramÈtricos.
+**Por que fazer isso?** O teste de Shapiro-Wilk verifica se uma amostra vem de uma popula√ß√£o com distribui√ß√£o normal. A hip√≥tese nula (H0) √© que os dados **s√£o** normais. Se o p-valor for **maior que 0,05**, n√£o rejeitamos a normalidade. Se for **menor que 0,05**, os dados **n√£o** seguem uma distribui√ß√£o normal, e devemos usar testes n√£o param√©tricos.
 
 ``` r
 # -------------------------------------------------------------------------
 # 5. TESTE DE NORMALIDADE
 # -------------------------------------------------------------------------
 
-# O teste de Shapiro-Wilk requer uma amostra entre 3 e 5000 observaÁıes.
+# O teste de Shapiro-Wilk requer uma amostra entre 3 e 5000 observa√ß√µes.
 # Vamos aplicar separadamente para cada categoria.
 shapiro_b91 <- dados_tidy %>%
   filter(Categoria == "B91") %>%
@@ -236,12 +236,12 @@ shapiro_b31 <- dados_tidy %>%
 print(shapiro_b91)
 print(shapiro_b31)
 
-# InterpretaÁ„o:
-# Se p-value < 0,05: os dados N√O s„o normais -> use testes n„o paramÈtricos.
-# Se p-value >= 0,05: os dados S√O normais -> pode usar testes paramÈtricos.
+# Interpreta√ß√£o:
+# Se p-value < 0,05: os dados N√ÉO s√£o normais -> use testes n√£o param√©tricos.
+# Se p-value >= 0,05: os dados S√ÉO normais -> pode usar testes param√©tricos.
 ```
 
-**Dica:** O teste de Shapiro-Wilk È sensÌvel a amostras muito grandes. Para amostras \> 5000, use o teste de Anderson-Darling (`ad.test` do pacote `nortest`).
+**Dica:** O teste de Shapiro-Wilk √© sens√≠vel a amostras muito grandes. Para amostras \> 5000, use o teste de Anderson-Darling (`ad.test` do pacote `nortest`).
 
 ``` r
 # Alternativa para amostras grandes: Anderson-Darling
@@ -261,31 +261,31 @@ print(ad_b31)
 
 ------------------------------------------------------------------------
 
-## 6. An·lise de CorrelaÁ„o
+## 6. An√°lise de correla√ß√£o
 
-Agora que sabemos se os dados s„o normais ou n„o, podemos escolher o coeficiente de correlaÁ„o adequado. Vamos calcular **Pearson** (paramÈtrico, para dados normais), **Spearman** e **Kendall** (n„o paramÈtricos, para dados n„o normais ou ordinais).
+Agora que sabemos se os dados s√£o normais ou n√£o, podemos escolher o coeficiente de correla√ß√£o adequado. Vamos calcular **Pearson** (param√©trico, para dados normais), **Spearman** e **Kendall** (n√£o param√©tricos, para dados n√£o normais ou ordinais).
 
-**Importante:** Para calcular correlaÁ„o, precisamos de **duas vari·veis numÈricas**. No nosso caso, podemos correlacionar as quantidades de B91 e B31 para cada doenÁa. Para isso, precisamos **empilhar** os dados de forma que cada linha tenha a quantidade de B91 e B31 para a mesma doenÁa.
+**Importante:** Para calcular correla√ß√£o, precisamos de **duas vari√°veis num√©ricas**. No nosso caso, podemos correlacionar as quantidades de B91 e B31 para cada doen√ßa. Para isso, precisamos **empilhar** os dados de forma que cada linha tenha a quantidade de B91 e B31 para a mesma doen√ßa.
 
 ``` r
 # -------------------------------------------------------------------------
-# 6. AN¡LISE DE CORRELA«√O
+# 6. AN√ÅLISE DE CORRELA√á√ÉO
 # -------------------------------------------------------------------------
 
-# Primeiro, vamos criar um data frame onde cada doenÁa È uma linha,
+# Primeiro, vamos criar um data frame onde cada doen√ßa √© uma linha,
 # com colunas separadas para B91 e B31.
 dados_correlacao <- dados_tidy %>%
   pivot_wider(
     names_from = Categoria,   # Os valores de "Categoria" viram nomes de colunas
     values_from = Quantidade  # Os valores de "Quantidade" preenchem essas colunas
   ) %>%
-  filter(!is.na(B91) & !is.na(B31))  # MantÈm apenas doenÁas presentes em ambas as categorias
+  filter(!is.na(B91) & !is.na(B31))  # Mant√©m apenas doen√ßas presentes em ambas as categorias
 
 # Visualizando a estrutura
 head(dados_correlacao)
 
-# --- CorrelaÁ„o de Pearson (paramÈtrica) ---
-# Requer normalidade bivariada e relaÁ„o linear.
+# --- Correla√ß√£o de Pearson (param√©trica) ---
+# Requer normalidade bivariada e rela√ß√£o linear.
 pearson_test <- cor.test(
   x = dados_correlacao$B91,
   y = dados_correlacao$B31,
@@ -293,10 +293,10 @@ pearson_test <- cor.test(
 )
 print(pearson_test)
 
-# --- CorrelaÁ„o de Spearman (n„o paramÈtrica) ---
-# Baseada nos ranks (postos) dos dados. N„o requer normalidade.
-# `exact = FALSE` evita o aviso "n„o È possÌvel computar o valor de p exato com o de desempate"
-# quando h· valores repetidos (empates) nos dados.
+# --- Correla√ß√£o de Spearman (n√£o param√©trica) ---
+# Baseada nos ranks (postos) dos dados. N√£o requer normalidade.
+# `exact = FALSE` evita o aviso "n√£o √© poss√≠vel computar o valor de p exato com o de desempate"
+# quando h√° valores repetidos (empates) nos dados.
 spearman_test <- cor.test(
   x = dados_correlacao$B91,
   y = dados_correlacao$B31,
@@ -305,10 +305,10 @@ spearman_test <- cor.test(
 )
 print(spearman_test)
 
-# --- CorrelaÁ„o de Kendall (n„o paramÈtrica) ---
-# TambÈm baseada em ranks, mas mais robusta para amostras pequenas.
-# `exact = FALSE` evita o aviso "n„o È possÌvel computar o valor de p exato com o de desempate"
-# quando h· valores repetidos (empates) nos dados.
+# --- Correla√ß√£o de Kendall (n√£o param√©trica) ---
+# Tamb√©m baseada em ranks, mas mais robusta para amostras pequenas.
+# `exact = FALSE` evita o aviso "n√£o √© poss√≠vel computar o valor de p exato com o de desempate"
+# quando h√° valores repetidos (empates) nos dados.
 kendall_test <- cor.test(
   x = dados_correlacao$B91,
   y = dados_correlacao$B31,
@@ -317,7 +317,7 @@ kendall_test <- cor.test(
 )
 print(kendall_test)
 
-# --- ComparaÁ„o dos resultados ---
+# --- Compara√ß√£o dos resultados ---
 # Vamos criar uma tabela resumo com os coeficientes e p-valores.
 resultados_cor <- tibble(
   Metodo = c("Pearson", "Spearman", "Kendall"),
@@ -325,7 +325,7 @@ resultados_cor <- tibble(
   P_valor = c(pearson_test$p.value, spearman_test$p.value, kendall_test$p.value)
 ) %>%
   mutate(
-    Significativo = ifelse(P_valor < 0.05, "Sim", "N„o"),
+    Significativo = ifelse(P_valor < 0.05, "Sim", "N√£o"),
     Interpretacao = case_when(
       abs(Coeficiente) >= 0.7 ~ "Forte",
       abs(Coeficiente) >= 0.4 ~ "Moderada",
@@ -339,26 +339,26 @@ print(resultados_cor)
 
 **Como interpretar:**
 
-| Coeficiente (r ou ??) | InterpretaÁ„o |
+| Coeficiente (r ou ??) | Interpreta√ß√£o |
 |----------------------|---------------|
-| 0,00 ñ 0,19          | Muito fraca   |
-| 0,20 ñ 0,39          | Fraca         |
-| 0,40 ñ 0,69          | Moderada      |
-| 0,70 ñ 0,89          | Forte         |
-| 0,90 ñ 1,00          | Muito forte   |
+| 0,00 ‚Äì 0,19          | Muito fraca   |
+| 0,20 ‚Äì 0,39          | Fraca         |
+| 0,40 ‚Äì 0,69          | Moderada      |
+| 0,70 ‚Äì 0,89          | Forte         |
+| 0,90 ‚Äì 1,00          | Muito forte   |
 
-- **Sinal positivo:** quando uma vari·vel aumenta, a outra tambÈm aumenta (proporcionais);
+- **Sinal positivo:** quando uma vari√°vel aumenta, a outra tamb√©m aumenta (proporcionais);
 - **Sinal negativo:** quando uma aumenta, a outra diminui (inversamente proporcionais);
-- **P-valor \< 0,05:** a correlaÁ„o È estatisticamente significativa (Probabilidade de que n„o foi por acaso).
+- **P-valor \< 0,05:** a correla√ß√£o √© estatisticamente significativa (Probabilidade de que n√£o foi por acaso).
 
-**Qual escolher?** Se os dados **n„o** s„o normais (como geralmente acontece com contagens de afastamentos), o **Spearman** ou **Kendall** s„o mais apropriados.
-O Kendall È ˙til quando h· muitos empates (valores repetidos) ou amostras pequenas.
+**Qual escolher?** Se os dados **n√£o** s√£o normais (como geralmente acontece com contagens de afastamentos), o **Spearman** ou **Kendall** s√£o mais apropriados.
+O Kendall √© √∫til quando h√° muitos empates (valores repetidos) ou amostras pequenas.
 
 ------------------------------------------------------------------------
 
 ## 7. Teste de Wilcoxon (Mann-Whitney)
 
-O teste de Wilcoxon (tambÈm chamado de Mann-Whitney) È usado para comparar **duas amostras independentes** quando os dados n„o seguem uma distribuiÁ„o normal. Ele testa se as distribuiÁıes das duas amostras s„o iguais (H0) versus a alternativa de que uma tende a ter valores maiores que a outra.
+O teste de Wilcoxon (tamb√©m chamado de Mann-Whitney) √© usado para comparar **duas amostras independentes** quando os dados n√£o seguem uma distribui√ß√£o normal. Ele testa se as distribui√ß√µes das duas amostras s√£o iguais (H0) versus a alternativa de que uma tende a ter valores maiores que a outra.
 
 ``` r
 # -------------------------------------------------------------------------
@@ -366,49 +366,49 @@ O teste de Wilcoxon (tambÈm chamado de Mann-Whitney) È usado para comparar **dua
 # -------------------------------------------------------------------------
 
 # Vamos comparar as quantidades de afastamentos entre B91 e B31.
-# A hipÛtese nula È que as medianas das duas categorias s„o iguais.
-# OBS.: o mÈtodo de fÛrmula do wilcox.test() j· assume amostras independentes.
-# Por isso N√O se usa `paired = FALSE` aqui (isso gera o erro
+# A hip√≥tese nula √© que as medianas das duas categorias s√£o iguais.
+# OBS.: o m√©todo de f√≥rmula do wilcox.test() j√° assume amostras independentes.
+# Por isso N√ÉO se usa `paired = FALSE` aqui (isso gera o erro
 # "cannot use 'paired' in formula method"). Se quiser amostras pareadas, use x e y vetoriais.
 wilcox_test <- wilcox.test(
-  Quantidade ~ Categoria,  # FÛrmula: vari·vel dependente ~ vari·vel de agrupamento
+  Quantidade ~ Categoria,  # F√≥rmula: vari√°vel dependente ~ vari√°vel de agrupamento
   data = dados_tidy,
-  exact = FALSE,           # Usa aproximaÁ„o normal (recomendado para amostras grandes)
+  exact = FALSE,           # Usa aproxima√ß√£o normal (recomendado para amostras grandes)
   conf.level = 0.95
 )
 
 print(wilcox_test)
 
-# InterpretaÁ„o:
-# Se p-value < 0,05: rejeitamos H0. H· diferenÁa significativa entre as categorias.
-# Se p-value >= 0,05: n„o rejeitamos H0. N„o h· evidÍncia de diferenÁa.
+# Interpreta√ß√£o:
+# Se p-value < 0,05: rejeitamos H0. H√° diferen√ßa significativa entre as categorias.
+# Se p-value >= 0,05: n√£o rejeitamos H0. N√£o h√° evid√™ncia de diferen√ßa.
 ```
 
-**O que o teste de Wilcoxon faz?** Ele converte os valores em ranks (postos) e compara a soma dos ranks entre os grupos. … uma alternativa robusta ao teste t de Student quando a normalidade n„o È atendida.
+**O que o teste de Wilcoxon faz?** Ele converte os valores em ranks (postos) e compara a soma dos ranks entre os grupos. √â uma alternativa robusta ao teste t de Student quando a normalidade n√£o √© atendida.
 
 ------------------------------------------------------------------------
 
-## 8. VisualizaÁ„o dos Resultados
+## 8. Visualiza√ß√£o dos resultados
 
-### 8.1 Gr·fico de Dispers„o com Reta de Regress„o
+### 8.1 Gr√°fico de Dispers√£o com Reta de Regress√£o
 
 ``` r
 # -------------------------------------------------------------------------
-# 8. VISUALIZA«√O DOS RESULTADOS
+# 8. VISUALIZA√á√ÉO DOS RESULTADOS
 # -------------------------------------------------------------------------
 
-# Gr·fico de dispers„o: B91 vs B31
+# Gr√°fico de dispers√£o: B91 vs B31
 ggplot(dados_correlacao, aes(x = B91, y = B31)) +
   geom_point(alpha = 0.6, color = "steelblue", size = 3) +  # Pontos
-  geom_smooth(method = "lm", se = TRUE, color = "darkred") + # Reta de regress„o
-  scale_x_log10() +  # Escala log para melhor visualizaÁ„o
+  geom_smooth(method = "lm", se = TRUE, color = "darkred") + # Reta de regress√£o
+  scale_x_log10() +  # Escala log para melhor visualiza√ß√£o
   scale_y_log10() +
   labs(
-    title = "CorrelaÁ„o entre Afastamentos Acident·rios (B91) e N„o Acident·rios (B31)",
-    subtitle = "Cada ponto representa uma doenÁa",
+    title = "Correla√ß√£o entre Afastamentos Acident√°rios (B91) e N√£o Acident√°rios (B31)",
+    subtitle = "Cada ponto representa uma doen√ßa",
     x = "Quantidade de Afastamentos B91 (escala log)",
     y = "Quantidade de Afastamentos B31 (escala log)",
-    caption = "Fonte: SmartLab/INSS ï Elaborado no R"
+    caption = "Fonte: SmartLab/INSS ‚Ä¢ Elaborado no R"
   ) +
   theme_minimal() +
   theme(
@@ -420,12 +420,12 @@ ggplot(dados_correlacao, aes(x = B91, y = B31)) +
 ### 8.2 Boxplot Comparativo (B91 vs B31)
 
 ``` r
-# Boxplot comparando as distribuiÁıes
+# Boxplot comparando as distribui√ß√µes
 ggplot(dados_tidy, aes(x = Categoria, y = Quantidade, fill = Categoria)) +
   geom_boxplot(alpha = 0.7) +
   scale_y_log10() +
   labs(
-    title = "ComparaÁ„o das Quantidades de Afastamentos por Categoria",
+    title = "Compara√ß√£o das Quantidades de Afastamentos por Categoria",
     x = "Categoria",
     y = "Quantidade (escala log)"
   ) +
@@ -433,12 +433,12 @@ ggplot(dados_tidy, aes(x = Categoria, y = Quantidade, fill = Categoria)) +
   theme(legend.position = "none")
 ```
 
-### 8.3 Matriz de CorrelaÁ„o (para m˙ltiplas vari·veis)
+### 8.3 Matriz de correla√ß√£o (para m√∫ltiplas vari√°veis)
 
-Se vocÍ tiver mais de duas vari·veis numÈricas (por exemplo, quantidade por doenÁa, por ocupaÁ„o, por atividade econÙmica), pode criar uma matriz de correlaÁ„o.
+Se voc√™ tiver mais de duas vari√°veis num√©ricas (por exemplo, quantidade por doen√ßa, por ocupa√ß√£o, por atividade econ√¥mica), pode criar uma matriz de correla√ß√£o.
 
 ``` r
-# Exemplo hipotÈtico: suponha que vocÍ tenha um data frame com v·rias vari·veis
+# Exemplo hipot√©tico: suponha que voc√™ tenha um data frame com v√°rias vari√°veis
 # Vamos simular com os dados que temos (apenas B91 e B31)
 matriz_cor <- cor(
   dados_correlacao %>% select(B91, B31),
@@ -453,65 +453,65 @@ corrplot(
   addCoef.col = "black",
   tl.col = "black",
   tl.srt = 45,
-  title = "Matriz de CorrelaÁ„o de Spearman",
+  title = "Matriz de Correla√ß√£o de Spearman",
   mar = c(0, 0, 2, 0)
 )
 ```
 
 ------------------------------------------------------------------------
 
-## 9. ExportaÁ„o para o Flourish
+## 9. Exporta√ß√£o para o Flourish
 
-O Flourish È uma ferramenta de visualizaÁ„o de dados online que permite criar gr·ficos interativos sem programaÁ„o. Para us·-lo, vocÍ precisa exportar seus dados em formato CSV (ou Excel) e fazer o upload no site.
+O Flourish √© uma ferramenta de visualiza√ß√£o de dados online que permite criar gr√°ficos interativos sem programa√ß√£o. Para us√°-lo, voc√™ precisa exportar seus dados em formato CSV (ou Excel) e fazer o upload no site.
 
 ``` r
 # -------------------------------------------------------------------------
-# 9. EXPORTA«√O PARA O FLOURISH
+# 9. EXPORTA√á√ÉO PARA O FLOURISH
 # -------------------------------------------------------------------------
 
-# Exportando os dados tidy para CSV (j· fizemos isso antes, mas vamos garantir)
+# Exportando os dados tidy para CSV (j√° fizemos isso antes, mas vamos garantir)
 write_csv(dados_tidy, "dados_para_flourish.csv")
 
 # Se preferir Excel:
 write_xlsx(dados_tidy, "dados_para_flourish.xlsx")
 
-# InstruÁıes para o Flourish:
+# Instru√ß√µes para o Flourish:
 # 1. Acesse https://flourish.studio/ e crie uma conta gratuita.
 # 2. Clique em "New visualization" e escolha um template (ex.: Bar chart race, Sankey, etc.).
-# 3. Na aba "Data", faÁa upload do arquivo CSV ou Excel que vocÍ exportou.
+# 3. Na aba "Data", fa√ßa upload do arquivo CSV ou Excel que voc√™ exportou.
 # 4. Mapeie as colunas: arraste "Doenca" para o eixo de categorias e "Quantidade" para o eixo de valores.
-# 5. Personalize cores, tÌtulos e legendas conforme necess·rio.
-# 6. Publique e compartilhe o link da visualizaÁ„o.
+# 5. Personalize cores, t√≠tulos e legendas conforme necess√°rio.
+# 6. Publique e compartilhe o link da visualiza√ß√£o.
 ```
 
-**Dica:** O Flourish aceita URLs de dados ao vivo (por exemplo, um link raw do GitHub). Se vocÍ atualizar o CSV no GitHub, o gr·fico no Flourish pode ser atualizado automaticamente.
+**Dica:** O Flourish aceita URLs de dados ao vivo (por exemplo, um link raw do GitHub). Se voc√™ atualizar o CSV no GitHub, o gr√°fico no Flourish pode ser atualizado automaticamente.
 
 ------------------------------------------------------------------------
 
 ## 10. Dicas
 
-1.  **Sempre comece um novo script com um cabeÁalho** descrevendo o objetivo, autor e data.
-2.  **Use coment·rios** (`#`) para explicar o que cada bloco de cÛdigo faz. Isso ajuda vocÍ e outras pessoas a entenderem o script depois.
-3.  **Organize seu projeto em pastas:** `Dados/` para arquivos de entrada, `Scripts/` para cÛdigos, `Graficos/` para saÌdas.
-4.  **Use o RStudio:** ele facilita a visualizaÁ„o de data frames, o gerenciamento de projetos e a execuÁ„o de scripts.
-5.  **Aprenda a usar o `%>%` (pipe):** ele torna o cÛdigo mais legÌvel, encadeando operaÁıes.
+1.  **Sempre comece um novo script com um cabe√ßalho** descrevendo o objetivo, autor e data.
+2.  **Use coment√°rios** (`#`) para explicar o que cada bloco de c√≥digo faz. Isso ajuda voc√™ e outras pessoas a entenderem o script depois.
+3.  **Organize seu projeto em pastas:** `Dados/` para arquivos de entrada, `Scripts/` para c√≥digos, `Graficos/` para sa√≠das.
+4.  **Use o RStudio:** ele facilita a visualiza√ß√£o de data frames, o gerenciamento de projetos e a execu√ß√£o de scripts.
+5.  **Aprenda a usar o `%>%` (pipe):** ele torna o c√≥digo mais leg√≠vel, encadeando opera√ß√µes.
 6.  **Verifique sempre a estrutura dos dados** com `str()`, `glimpse()` ou `head()` antes de analisar.
 7.  **Cuidado com valores ausentes (NA):** muitos testes falham se houver NAs. Use `na.rm = TRUE` ou remova-os com `drop_na()`.
-8.  **N„o confunda correlaÁ„o com causalidade:** uma correlaÁ„o significativa n„o prova que uma vari·vel causa a outra.
-9.  **Documente suas decisıes estatÌsticas:** por que escolheu Spearman em vez de Pearson? Por que usou Wilcoxon?
-10. **Pratique com dados p˙blicos:** o SmartLab oferece dados abertos. Explore outras localidades e categorias.
+8.  **N√£o confunda correla√ß√£o com causalidade:** uma correla√ß√£o significativa n√£o prova que uma vari√°vel causa a outra.
+9.  **Documente suas decis√µes estat√≠sticas:** por que escolheu Spearman em vez de Pearson? Por que usou Wilcoxon?
+10. **Pratique com dados p√∫blicos:** o SmartLab oferece dados abertos. Explore outras localidades e categorias.
 
 ------------------------------------------------------------------------
 
-## 11. ConsideraÁıes Finais e LimitaÁıes
+## 11. Considera√ß√µes Finais e Limita√ß√µes
 
-- **Dados do SmartLab:** O SmartLab agrega dados do INSS e do SINAN. Os dados de afastamentos (B91 e B31) s„o baseados em concessıes de benefÌcios, o que pode subestimar a real prevalÍncia de doenÁas ocupacionais devido ‡ subnotificaÁ„o.
-- **Categorias ìOutrosî:** Em ambas as categorias, ìOutrosî representa uma parcela significativa dos afastamentos, o que indica baixa especificidade diagnÛstica e dificulta an·lises detalhadas.
-- **Nomenclaturas duplicadas:** Como observado no relatÛrio, existem categorias com nomes semelhantes (ex.: ìDepressıes e EpisÛdios Depressivosî e ìEpisÛdios Depressivos e Depressıesî). Esses nomes s„o padronizados na **seÁ„o 3**, que cria um dicion·rio de-para e soma as quantidades das grafias equivalentes.
-- **Causalidade:** Este script foca em **associaÁ„o**, n„o em causalidade. Para inferir causalidade, seriam necess·rios estudos longitudinais com controle de vari·veis de confus„o.
+- **Dados do SmartLab:** O SmartLab agrega dados do INSS e do SINAN. Os dados de afastamentos (B91 e B31) s√£o baseados em concess√µes de benef√≠cios, o que pode subestimar a real preval√™ncia de doen√ßas ocupacionais devido √† subnotifica√ß√£o.
+- **Categorias ‚ÄúOutros‚Äù:** Em ambas as categorias, ‚ÄúOutros‚Äù representa uma parcela significativa dos afastamentos, o que indica baixa especificidade diagn√≥stica e dificulta an√°lises detalhadas.
+- **Nomenclaturas duplicadas:** Como observado no relat√≥rio, existem categorias com nomes semelhantes (ex.: ‚ÄúDepress√µes e Epis√≥dios Depressivos‚Äù e ‚ÄúEpis√≥dios Depressivos e Depress√µes‚Äù). Esses nomes s√£o padronizados na **se√ß√£o 3**, que cria um dicion√°rio de-para e soma as quantidades das grafias equivalentes.
+- **Causalidade:** Este script foca em **associa√ß√£o**, n√£o em causalidade. Para inferir causalidade, seriam necess√°rios estudos longitudinais com controle de vari√°veis de confus√£o.
 
 ------------------------------------------------------------------------
 
 ## 12. Livro
 
-- **Livro ìR for Data Scienceî:** <https://r4ds.had.co.nz/> ñ Excelente recurso gratuito para aprender R.
+- **Livro ‚ÄúR for Data Science‚Äù:** <https://r4ds.had.co.nz/> ‚Äì Excelente recurso gratuito para aprender R.
