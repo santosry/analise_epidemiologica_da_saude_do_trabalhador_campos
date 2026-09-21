@@ -484,7 +484,7 @@ write_xlsx(dados_tidy, "dados_para_flourish.xlsx")
 # 6. Publique e compartilhe o link da visualização.
 ```
 
-**Dica:** O Flourish aceita URLs de dados ao vivo (por exemplo, um link raw do GitHub). Se você atualizar o CSV no GitHub, o gráfico no Flourish pode ser atualizado automaticamente.
+**Dica:** o Flourish aceita URLs de dados ao vivo (por exemplo, um link raw do GitHub). Se você atualizar o CSV no GitHub, o gráfico no Flourish pode ser atualizado automaticamente.
 
 ------------------------------------------------------------------------
 
@@ -499,16 +499,14 @@ write_xlsx(dados_tidy, "dados_para_flourish.xlsx")
 7.  **Cuidado com valores ausentes (NA):** muitos testes falham se houver NAs. Use `na.rm = TRUE` ou remova-os com `drop_na()`.
 8.  **Não confunda correlação com causalidade:** uma correlação significativa não prova que uma variável causa a outra.
 9.  **Documente suas decisões estatísticas:** por que escolheu Spearman em vez de Pearson? Por que usou Wilcoxon?
-10. **Pratique com dados públicos:** o SmartLab oferece dados abertos. Explore outras localidades e categorias.
 
 ------------------------------------------------------------------------
 
-## 11. Considerações Finais e Limitações
+## 11. Considerações finais
 
 - **Dados do SmartLab:** O SmartLab agrega dados do INSS e do SINAN. Os dados de afastamentos (B91 e B31) são baseados em concessões de benefícios, o que pode subestimar a real prevalência de doenças ocupacionais devido à subnotificação.
 - **Categorias “Outros”:** Em ambas as categorias, “Outros” representa uma parcela significativa dos afastamentos, o que indica baixa especificidade diagnóstica e dificulta análises detalhadas.
 - **Nomenclaturas duplicadas:** Como observado no relatório, existem categorias com nomes semelhantes (ex.: “Depressões e Episódios Depressivos” e “Episódios Depressivos e Depressões”). Esses nomes são padronizados na **seção 3**, que cria um dicionário de-para e soma as quantidades das grafias equivalentes.
-- **Causalidade:** Este script foca em **associação**, não em causalidade. Para inferir causalidade, seriam necessários estudos longitudinais com controle de variáveis de confusão.
 
 ------------------------------------------------------------------------
 
