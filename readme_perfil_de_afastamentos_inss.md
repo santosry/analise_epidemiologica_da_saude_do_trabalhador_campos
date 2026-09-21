@@ -1,6 +1,6 @@
 # Script R para Análise Estatística Associativa de Dados de Saúde do Trabalhador (SmartLab/INSS)
 
-Este script foi desenvolvido para servir como um guia didático completo para iniciantes na análise de dados com R. Ele cobre desde a importação e organização dos dados até a aplicação de testes estatísticos de associação (normalidade, correlação de Pearson, Spearman, Kendall e teste de Wilcoxon), com explicações linha a linha e boas práticas de visualização. O exemplo utiliza os dados de perfil de doenças e ocupações do SmartLab, mas a lógica pode ser adaptada para qualquer conjunto de dados.
+Este script foi desenvolvido para servir como um guia didático para iniciantes na análise de dados com R, cobrindo desde a importação e organização dos dados até a aplicação de testes estatísticos de associação (normalidade, correlação de Pearson, Spearman, Kendall e teste de Wilcoxon), com explicações linha a linha e boas práticas de visualização. O exemplo utiliza os dados de perfil de doenças e ocupações do SmartLab, mas a lógica pode ser adaptada para qualquer conjunto de dados.
 
 ------------------------------------------------------------------------
 
